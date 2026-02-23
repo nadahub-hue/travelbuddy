@@ -29,7 +29,7 @@ export default function CardPayment() {
   try {
     const amount = 2.0;
 
-    const res = await fetch("http://localhost:7500/payment", {
+    const res = await fetch("https://github.com/nadahub-hue/travelbuddy", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -37,7 +37,6 @@ export default function CardPayment() {
         paymentMethod: "card",
       }),
     });
-//git remote add origin https://github.com/nadahub-hue/travelbuddy.git
     const data = await res.json();
 
     if (!res.ok || !data.flag) {

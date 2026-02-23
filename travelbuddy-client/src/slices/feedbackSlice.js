@@ -5,7 +5,7 @@ export const sendFeedbackThunk = createAsyncThunk(
   "feedback/sendFeedback",
   async (feedbackData, { rejectWithValue }) => {
     try {
-      const res = await axios.post("http://localhost:7500/sendFeedback", feedbackData);
+      const res = await axios.post("https://github.com/nadahub-hue/travelbuddy", feedbackData);
       return res.data; 
     } catch (err) {
       return rejectWithValue(

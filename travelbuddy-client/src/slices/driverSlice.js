@@ -6,7 +6,7 @@ export const newDriverThunk = createAsyncThunk(
   "driver/register",
   async (driverData, { rejectWithValue }) => {
     try {
-      const res = await fetch("http://localhost:7500/driverRegister", {
+      const res = await fetch("https://github.com/nadahub-hue/travelbuddy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(driverData)
@@ -23,7 +23,7 @@ export const newDriverThunk = createAsyncThunk(
 // driver login
 export const driverLoginThunk = createAsyncThunk("driverSlice/driverLoginThunk", async (driverData, { rejectWithValue }) => {
   try {
-    const res = await axios.post("http://localhost:7500/driverLogin", driverData)
+    const res = await axios.post("https://github.com/nadahub-hue/travelbuddy", driverData)
     return res.data
   } catch (err) {
     console.log(err)

@@ -6,7 +6,7 @@ export const processPaymentThunk = createAsyncThunk(
   "payment/processPayment",
   async (paymentData, { rejectWithValue }) => {
     try {
-      const res = await axios.post("http://localhost:7500/processPayment", paymentData);
+      const res = await axios.post("https://github.com/nadahub-hue/travelbuddy", paymentData);
       return res.data; // { serverMsg, paymentStatus, paymentInfo }
     } catch (err) {
       return rejectWithValue(

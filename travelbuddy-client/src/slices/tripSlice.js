@@ -6,8 +6,8 @@ export const createTripThunk = createAsyncThunk(
   "trip/createTrip",
   async (tripData, { rejectWithValue }) => {
     try {
-      const res = await axios.post("http://localhost:7500/createTrip", tripData);
-      return res.data; 
+      const res = await axios.post("http://:7500/createTrip", tripData);
+      return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data || { serverMsg: "Trip creation failed", flag: false });
     }
@@ -19,14 +19,14 @@ export const searchTripsThunk = createAsyncThunk(
   "trip/searchTrips",
   async (query, { rejectWithValue }) => {
     try {
-      const url = new URL("http://localhost:7500/searchTrips");
+      const url = new URL("http://:7500/searchTrips");
 
       Object.keys(query).forEach(key => {
         if (query[key]) url.searchParams.append(key, query[key]);
       });
 
       const res = await axios.get(url.toString());
-      return res.data; 
+      return res.data;
     } catch (err) {
       return rejectWithValue({ serverMsg: "Search failed" });
     }

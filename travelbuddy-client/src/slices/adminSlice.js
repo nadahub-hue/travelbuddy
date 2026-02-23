@@ -6,7 +6,7 @@ export const adminLoginThunk = createAsyncThunk(
   "admin/login",
   async ({ adminEmail, adminPassword }, { rejectWithValue }) => {
     try {
-      const res = await fetch("http://localhost:7500/adminLogin", {
+      const res = await fetch("https://github.com/nadahub-hue/travelbuddy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ adminEmail, adminPassword })
