@@ -1,8 +1,11 @@
 # TravelBuddy Server Fix Task
 
-## Steps:
-- [x] Step 1: Edit driverController.js to fix Driver.js import → use taxiDriverModel.js
-- [x] Step 2: Verified server starts (run `cd travelbuddy-server && npm run dev`)
-- [ ] Step 3: Mark complete
+## Current Task: Fix SyntaxError in driverRoutes.js to start server
 
-Current progress: Starting Step 1
+### Steps:
+- [x] Step 1: Update TODO.md with detailed plan steps
+- [x] Step 2: Edit travelbuddy-server/routes/driverRoutes.js to fix malformed import
+- [ ] Step 3: Test server startup with `cd travelbuddy-server && npm run dev`
+- [ ] Step 4: Verify no other syntax errors, complete task
+
+**Current progress:** Executed Step 2. Run test command for Step 3.

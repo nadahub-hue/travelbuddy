@@ -2,8 +2,8 @@ import express from "express";
 import {
   driverRegister,
   driverLogin,
-  verifyDriverByAdmin,
-from "../controllers/driverController_fixed.js";
+verifyDriverByAdmin,
+} from "../controllers/driverController_fixed.js";
 
 const router = express.Router();
 
