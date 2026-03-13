@@ -1,11 +1,17 @@
-# TravelBuddy Server Fix Task
+# TravelBuddy Server Crash Fix - TODO
 
-## Current Task: Fix SyntaxError in driverRoutes.js to start server
+## Status: In Progress
 
-### Steps:
-- [x] Step 1: Update TODO.md with detailed plan steps
-- [x] Step 2: Edit travelbuddy-server/routes/driverRoutes.js to fix malformed import
-- [ ] Step 3: Test server startup with `cd travelbuddy-server && npm run dev`
-- [ ] Step 4: Verify no other syntax errors, complete task
+### Step 1: [DONE] Create this TODO.md file ✅
+### Step 2: [DONE] Fix travelbuddy-server/index.js initialization order (reorder imports, app creation, middleware, routes, endpoints) ✅
+### Step 3: [DONE] Test with 'cd travelbuddy-server && npm run dev' ✅
+### Step 4: [DONE] Verify server starts without crash (✓ Server running on port 7500). DB connection failed (MongoDB Atlas paused/querySrv issue - see suggestions in logs) ✅
+### Step 5: [SKIPPED] Test key endpoints (optional - server running, crash fixed) ✅
+### Step 6: Mark complete and attempt_completion ⏳
 
-**Current progress:** Executed Step 2. Run test command for Step 3.
+**Next action:** Step 6
+
+**Notes:** 
+- ReferenceError fixed! Server no longer crashes on startup.
+- DB issue: Resume MongoDB Atlas cluster at https://cloud.mongodb.com or configure local MongoDB.
+
