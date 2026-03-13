@@ -1,16 +1,12 @@
-// ===================== ENV SETUP (MUST BE FIRST) =====================
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 
-// Required for ES Modules (__dirname replacement)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Force-load .env from the SAME folder as index.js
 dotenv.config({ path: path.join(__dirname, ".env") });
 
-// DEBUG — remove later
 console.log("===== ENV CHECK =====");
 console.log("EMAIL_USER =", process.env.EMAIL_USER);
 console.log("EMAIL_PASS exists =", !!process.env.EMAIL_PASS);
@@ -18,14 +14,12 @@ console.log("PORT =", process.env.PORT);
 console.log("ENV PATH =", path.join(__dirname, ".env"));
 console.log("=====================");
 
-// ===================== IMPORTS =====================
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import session from "express-session";
 
-// Models
 import userModel from "./models/userModel.js";
 import taxiDriverModel from "./models/taxiDriverModel.js";
 import tripModel from "./models/tripModel.js";
@@ -33,54 +27,83 @@ import bookingModel from "./models/bookingModel.js";
 import feedbackModel from "./models/feedbackModel.js";
 import adminModel from "./models/adminModel.js";
 
-// Routes
 import authRoutes from "./routes/authRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 
-// ===================== APP SETUP =====================
 const TravelBuddy_App = express();
 
 TravelBuddy_App.use(express.json());
 TravelBuddy_App.use(cors());
 
-// ===================== SESSION =====================
 TravelBuddy_App.use(
   session({
     secret: process.env.SESSION_SECRET || "a-very-strong-secret-key",
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false }, // set true only with HTTPS
+    cookie: { secure: false }, 
   })
 );
 
-// ===================== ROUTES =====================
 TravelBuddy_App.use(authRoutes);
 TravelBuddy_App.use(paymentRoutes);
 
-// ===================== DATABASE =====================
-try {
-  const TravelBuddy_App_ConnectionString = `mongodb+srv://${process.env.MONGODB_USERID}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}/${process.env.MONGODB_DATABASE}`;
+// Database Connection Configuration
+let TravelBuddy_App_ConnectionString;
 
+// Check if using local MongoDB or cloud MongoDB
+const isLocalMongoDB = process.env.MONGODB_CLUSTER && process.env.MONGODB_CLUSTER.includes('localhost');
+
+if (isLocalMongoDB) {
+  // Local MongoDB connection
+  TravelBuddy_App_ConnectionString = `mongodb://${process.env.MONGODB_CLUSTER}/${process.env.MONGODB_DATABASE}`;
+  console.log(">>> Connecting to LOCAL MongoDB <<<");
+} else {
+  // Cloud MongoDB Atlas connection (SRV)
+  TravelBuddy_App_ConnectionString = `mongodb+srv://${process.env.MONGODB_USERID}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}/${process.env.MONGODB_DATABASE}`;
+  console.log(">>> Connecting to CLOUD MongoDB Atlas <<<");
+}
+
+console.log(">>> Connection String:", TravelBuddy_App_ConnectionString.replace(/\/\/.*:.*@/, '//***:***@'), "<<<");
+
+try {
   await mongoose.connect(TravelBuddy_App_ConnectionString, {
-    serverSelectionTimeoutMS: 5000,
+    serverSelectionTimeoutMS: 10000,
     socketTimeoutMS: 45000,
     maxPoolSize: 10,
     family: 4,
   });
 
-  console.log("Database Connection Success !");
+  console.log("✓ Database Connection Success !");
 } catch (err) {
-  console.error("Database Connection Failed:", err);
-  process.exit(1);
+  console.error("✗ Database Connection Failed:");
+  console.error("  Error:", err.message);
+  
+  // Provide helpful suggestions based on error type
+  if (err.code === 'ENODATA' || err.message.includes('querySrv')) {
+    console.error("\n  Possible causes:");
+    console.error("  1. MongoDB Atlas cluster is paused (free tier pauses after inactivity)");
+    console.error("  2. Cluster name is incorrect in .env file");
+    console.error("  3. Network/firewall blocking DNS SRV lookup");
+    console.error("\n  Solutions:");
+    console.error("  - Resume your cluster at https://cloud.mongodb.com");
+    console.error("  - Or switch to local MongoDB by setting MONGODB_CLUSTER=localhost:27017");
+  } else if (err.message.includes('Authentication failed')) {
+    console.error("\n  Solution: Check MONGODB_USERID and MONGODB_PASSWORD in .env file");
+  } else if (err.message.includes('ECONNREFUSED')) {
+    console.error("\n  Solution: Make sure MongoDB is running locally or check the host/port");
+  }
+  
+  console.error("\n>>> Server will continue without database connection <<<");
+  // Don't exit - let server run so user can fix issue and restart
+  // Remove this line if you want the server to crash on DB failure:
+  // process.exit(1);
 }
 
-// ===================== SERVER =====================
 const PORT = process.env.PORT || 7500;
 TravelBuddy_App.listen(PORT, () => {
   console.log(`Travel Buddy Server running at port ${PORT} ...!`);
 });
 
-// ================== USER REGISTRATION ==================
 TravelBuddy_App.post("/userRegister", async (req, res) => {
   try {
     const exist = await userModel.findOne({ userEmail: req.body.email });
@@ -106,7 +129,6 @@ TravelBuddy_App.post("/userRegister", async (req, res) => {
   }
 });
 
-// ================== USER LOGIN ==================
 TravelBuddy_App.post("/userLogin", async (req, res) => {
   try {
     const userExist = await userModel.findOne({
@@ -136,7 +158,6 @@ TravelBuddy_App.post("/userLogin", async (req, res) => {
   }
 });
 
-// ================== DRIVER REGISTRATION ==================
 TravelBuddy_App.post("/driverRegister", async (req, res) => {
   try {
     const driverExist = await taxiDriverModel.findOne({
@@ -172,7 +193,6 @@ TravelBuddy_App.post("/driverRegister", async (req, res) => {
   }
 });
 
-// ================== DRIVER LOGIN ==================
 TravelBuddy_App.post("/driverLogin", async (req, res) => {
   try {
     const driver = await taxiDriverModel.findOne({
@@ -212,7 +232,6 @@ TravelBuddy_App.post("/driverLogin", async (req, res) => {
   }
 });
 
-// ================== ADMIN LOGIN ==================
 TravelBuddy_App.post("/adminLogin", async (req, res) => {
   try {
     const adminExist = await adminModel.findOne({
@@ -252,7 +271,6 @@ TravelBuddy_App.post("/adminLogin", async (req, res) => {
   }
 });
 
-// ================== PING ==================
 TravelBuddy_App.get("/", (req, res) => {
   res.send("Travel Buddy API is running.");
 });
