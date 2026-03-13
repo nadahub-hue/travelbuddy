@@ -1,16 +1,12 @@
-// ===================== ENV SETUP (MUST BE FIRST) =====================
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 
-// Required for ES Modules (__dirname replacement)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Force-load .env from the SAME folder as index.js
 dotenv.config({ path: path.join(__dirname, ".env") });
 
-// DEBUG — remove later
 console.log("===== ENV CHECK =====");
 console.log("EMAIL_USER =", process.env.EMAIL_USER);
 console.log("EMAIL_PASS exists =", !!process.env.EMAIL_PASS);
@@ -18,14 +14,12 @@ console.log("PORT =", process.env.PORT);
 console.log("ENV PATH =", path.join(__dirname, ".env"));
 console.log("=====================");
 
-// ===================== IMPORTS =====================
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import session from "express-session";
 
-// Models
 import userModel from "./models/userModel.js";
 import taxiDriverModel from "./models/taxiDriverModel.js";
 import tripModel from "./models/tripModel.js";
@@ -33,31 +27,26 @@ import bookingModel from "./models/bookingModel.js";
 import feedbackModel from "./models/feedbackModel.js";
 import adminModel from "./models/adminModel.js";
 
-// Routes
 import authRoutes from "./routes/authRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 
-// ===================== APP SETUP =====================
 const TravelBuddy_App = express();
 
 TravelBuddy_App.use(express.json());
 TravelBuddy_App.use(cors());
 
-// ===================== SESSION =====================
 TravelBuddy_App.use(
   session({
     secret: process.env.SESSION_SECRET || "a-very-strong-secret-key",
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false }, // set true only with HTTPS
+    cookie: { secure: false }, 
   })
 );
 
-// ===================== ROUTES =====================
 TravelBuddy_App.use(authRoutes);
 TravelBuddy_App.use(paymentRoutes);
 
-// ===================== DATABASE =====================
 try {
   const TravelBuddy_App_ConnectionString = `mongodb+srv://${process.env.MONGODB_USERID}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}/${process.env.MONGODB_DATABASE}`;
 
@@ -74,13 +63,11 @@ try {
   process.exit(1);
 }
 
-// ===================== SERVER =====================
 const PORT = process.env.PORT || 7500;
 TravelBuddy_App.listen(PORT, () => {
   console.log(`Travel Buddy Server running at port ${PORT} ...!`);
 });
 
-// ================== USER REGISTRATION ==================
 TravelBuddy_App.post("/userRegister", async (req, res) => {
   try {
     const exist = await userModel.findOne({ userEmail: req.body.email });
@@ -106,7 +93,6 @@ TravelBuddy_App.post("/userRegister", async (req, res) => {
   }
 });
 
-// ================== USER LOGIN ==================
 TravelBuddy_App.post("/userLogin", async (req, res) => {
   try {
     const userExist = await userModel.findOne({
@@ -136,7 +122,6 @@ TravelBuddy_App.post("/userLogin", async (req, res) => {
   }
 });
 
-// ================== DRIVER REGISTRATION ==================
 TravelBuddy_App.post("/driverRegister", async (req, res) => {
   try {
     const driverExist = await taxiDriverModel.findOne({
@@ -172,7 +157,6 @@ TravelBuddy_App.post("/driverRegister", async (req, res) => {
   }
 });
 
-// ================== DRIVER LOGIN ==================
 TravelBuddy_App.post("/driverLogin", async (req, res) => {
   try {
     const driver = await taxiDriverModel.findOne({
@@ -212,7 +196,6 @@ TravelBuddy_App.post("/driverLogin", async (req, res) => {
   }
 });
 
-// ================== ADMIN LOGIN ==================
 TravelBuddy_App.post("/adminLogin", async (req, res) => {
   try {
     const adminExist = await adminModel.findOne({
@@ -251,8 +234,131 @@ TravelBuddy_App.post("/adminLogin", async (req, res) => {
     });
   }
 });
+TravelBuddy_App.post("/createTrip", async (req, res) => {
+  try {
+    const newTrip = {
+      ownerEmail: req.body.ownerEmail,
+      fromLocation: req.body.fromLocation,
+      toLocation: req.body.toLocation,
+      travelDate: req.body.travelDate,
+      travelTime: req.body.travelTime,
+      genderRestriction: req.body.genderRestriction || "any",
+      estimatedFare: req.body.estimatedFare || 0,
+      maxCompanions: req.body.maxCompanions || 3
+    }
+    await tripModel.create(newTrip)
+    res.json({ serverMsg: "Trip created", flag: true })
+  } catch (err) {
+    console.log("createTrip error:", err)
+    res.status(500).json({ serverMsg: "Trip creation error", flag: false })
+  }
+})
 
-// ================== PING ==================
-TravelBuddy_App.get("/", (req, res) => {
-  res.send("Travel Buddy API is running.");
+TravelBuddy_App.get("/searchTrips", async (req, res) => {
+  try {
+    const { fromLocation, toLocation, travelDate, gender } = req.query
+    const query = {}
+    
+    if (fromLocation) query.fromLocation = fromLocation
+    if (toLocation) query.toLocation = toLocation
+
+    if (travelDate) {
+      const d = new Date(travelDate)
+      const next = new Date(d)
+      next.setDate(next.getDate() + 1)
+      query.travelDate = { $gte: d, $lt: next }
+    }
+    if (gender && gender !== "any") {
+      query.genderRestriction = { $in: ["any", gender] }
+    }
+
+    const trips = await tripModel.find(query)
+    res.send(trips)
+  } catch (err) {
+    console.log("searchTrips error:", err)
+    res.status(500).json({ serverMsg: "Search trips error" })
+  }
+})
+
+TravelBuddy_App.post("/confirmBooking", async (req, res) => {
+  try {
+    const { tripId, participantEmails } = req.body
+    const trip = await tripModel.findById(tripId)
+
+    if (!trip) {
+      return res.status(404).json({ serverMsg: "Trip not found" })
+    }
+
+    const participants = participantEmails && participantEmails.length ? participantEmails : []
+    const totalFare = trip.estimatedFare || 0
+    const farePerPerson = participants.length ? totalFare / participants.length : totalFare
+
+    const booking = await bookingModel.create({
+      tripId,
+      participantEmails: participants,
+      totalFare,
+      farePerPerson,
+      status: "confirmed"
+    })
+
+    res.json({ serverMsg: "Booking confirmed", booking })
+  } catch (err) {
+    console.log("confirmBooking error:", err)
+    res.status(500).json({ serverMsg: "Booking error" })
+  }
+})
+
+TravelBuddy_App.post("/processPayment", async (req, res) => {
+  try {
+    const { bookingId, amount, paymentMethod } = req.body;
+
+    const transactionId = "TXN-" + Date.now();
+
+    const paymentRecord = await paymentModel.create({
+      bookingId,
+      amount,
+      paymentMethod,
+      transactionId,
+      paymentStatus: "success",
+    });
+
+    res.json({
+      serverMsg: "Payment successful",
+      paymentStatus: true,
+      paymentInfo: paymentRecord
+    });
+
+  } catch (err) {
+    console.log("processPayment error:", err);
+    res.status(500).json({
+      serverMsg: "Payment failed",
+      paymentStatus: false
+    });
+  }
 });
+
+TravelBuddy_App.post("/sendFeedback", async (req, res) => {
+  try {
+    const { userEmail, rating, comment } = req.body
+    await feedbackModel.create({ userEmail, rating, comment })
+    res.json({ serverMsg: "Feedback saved. Thank you!" })
+  } catch (err) {
+    console.log("feedback error:", err)
+    res.status(500).json({ serverMsg: "Feedback error" })
+  }
+})
+
+TravelBuddy_App.post("/logout", (req, res) => {
+  req.session?.destroy((err) => {
+    if (err) {
+      console.log("Logout error:", err);
+      return res.status(500).json({ serverMsg: "Logout failed" });
+    }
+    res.clearCookie("connect.sid");
+    res.json({ serverMsg: "Logged out successfully" });
+  });
+});
+
+TravelBuddy_App.get("/", (req, res) => {
+  res.send("Travel Buddy API is running.")
+})

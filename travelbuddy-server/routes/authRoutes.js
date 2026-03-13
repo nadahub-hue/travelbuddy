@@ -7,15 +7,12 @@ import path from "path";
 import { fileURLToPath } from "url";
 import User from "../models/userModel.js";
 
-// ===================== LOAD ENV HERE (CRITICAL) =====================
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, "../.env") });
 
-// ===================== ROUTER =====================
 const router = express.Router();
 
-// ===================== TRANSPORTER (AFTER dotenv) =====================
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -24,7 +21,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Optional but VERY useful
 transporter.verify((error, success) => {
   if (error) {
     console.error("❌ Nodemailer config error:", error.message);
@@ -33,7 +29,6 @@ transporter.verify((error, success) => {
   }
 });
 
-// ===================== FORGOT PASSWORD =====================
 router.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
@@ -46,7 +41,7 @@ router.post("/forgot-password", async (req, res) => {
     const token = crypto.randomBytes(32).toString("hex");
 
     user.resetToken = token;
-    user.resetTokenExp = Date.now() + 60 * 60 * 1000; // 1 hour
+    user.resetTokenExp = Date.now() + 60 * 60 * 1000; 
     await user.save();
 
     const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
@@ -74,7 +69,6 @@ router.post("/forgot-password", async (req, res) => {
   }
 });
 
-// ===================== RESET PASSWORD =====================
 router.post("/reset-password-email", async (req, res) => {
   try {
     const { token, newPassword } = req.body;
