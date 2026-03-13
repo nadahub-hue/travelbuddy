@@ -58,7 +58,7 @@ export default function CardPayment() {
     fontSize: "1.1rem",
     border: "2px solid #000",
   };
-
+  
   const errorStyle = {
     color: "red",
     fontWeight: "600",
