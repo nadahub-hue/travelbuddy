@@ -1,6 +1,3 @@
-// Admin model
-// © 2025 Travel Buddy. All rights reserved.
-
 import mongoose from "mongoose"
 
 const adminSchema = new mongoose.Schema(

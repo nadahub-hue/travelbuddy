@@ -1,6 +1,3 @@
-// Taxi driver model
-// © 2025 Travel Buddy. All rights reserved.
-
 import mongoose from "mongoose"
 
 const taxiDriverSchema = new mongoose.Schema(

@@ -270,7 +270,131 @@ TravelBuddy_App.post("/adminLogin", async (req, res) => {
     });
   }
 });
+TravelBuddy_App.post("/createTrip", async (req, res) => {
+  try {
+    const newTrip = {
+      ownerEmail: req.body.ownerEmail,
+      fromLocation: req.body.fromLocation,
+      toLocation: req.body.toLocation,
+      travelDate: req.body.travelDate,
+      travelTime: req.body.travelTime,
+      genderRestriction: req.body.genderRestriction || "any",
+      estimatedFare: req.body.estimatedFare || 0,
+      maxCompanions: req.body.maxCompanions || 3
+    }
+    await tripModel.create(newTrip)
+    res.json({ serverMsg: "Trip created", flag: true })
+  } catch (err) {
+    console.log("createTrip error:", err)
+    res.status(500).json({ serverMsg: "Trip creation error", flag: false })
+  }
+})
+
+TravelBuddy_App.get("/searchTrips", async (req, res) => {
+  try {
+    const { fromLocation, toLocation, travelDate, gender } = req.query
+    const query = {}
+    
+    if (fromLocation) query.fromLocation = fromLocation
+    if (toLocation) query.toLocation = toLocation
+
+    if (travelDate) {
+      const d = new Date(travelDate)
+      const next = new Date(d)
+      next.setDate(next.getDate() + 1)
+      query.travelDate = { $gte: d, $lt: next }
+    }
+    if (gender && gender !== "any") {
+      query.genderRestriction = { $in: ["any", gender] }
+    }
+
+    const trips = await tripModel.find(query)
+    res.send(trips)
+  } catch (err) {
+    console.log("searchTrips error:", err)
+    res.status(500).json({ serverMsg: "Search trips error" })
+  }
+})
+
+TravelBuddy_App.post("/confirmBooking", async (req, res) => {
+  try {
+    const { tripId, participantEmails } = req.body
+    const trip = await tripModel.findById(tripId)
+
+    if (!trip) {
+      return res.status(404).json({ serverMsg: "Trip not found" })
+    }
+
+    const participants = participantEmails && participantEmails.length ? participantEmails : []
+    const totalFare = trip.estimatedFare || 0
+    const farePerPerson = participants.length ? totalFare / participants.length : totalFare
+
+    const booking = await bookingModel.create({
+      tripId,
+      participantEmails: participants,
+      totalFare,
+      farePerPerson,
+      status: "confirmed"
+    })
+
+    res.json({ serverMsg: "Booking confirmed", booking })
+  } catch (err) {
+    console.log("confirmBooking error:", err)
+    res.status(500).json({ serverMsg: "Booking error" })
+  }
+})
+
+TravelBuddy_App.post("/processPayment", async (req, res) => {
+  try {
+    const { bookingId, amount, paymentMethod } = req.body;
+
+    const transactionId = "TXN-" + Date.now();
+
+    const paymentRecord = await paymentModel.create({
+      bookingId,
+      amount,
+      paymentMethod,
+      transactionId,
+      paymentStatus: "success",
+    });
+
+    res.json({
+      serverMsg: "Payment successful",
+      paymentStatus: true,
+      paymentInfo: paymentRecord
+    });
+
+  } catch (err) {
+    console.log("processPayment error:", err);
+    res.status(500).json({
+      serverMsg: "Payment failed",
+      paymentStatus: false
+    });
+  }
+});
+
+TravelBuddy_App.post("/sendFeedback", async (req, res) => {
+  try {
+    const { userEmail, rating, comment } = req.body
+    await feedbackModel.create({ userEmail, rating, comment })
+    res.json({ serverMsg: "Feedback saved. Thank you!" })
+  } catch (err) {
+    console.log("feedback error:", err)
+    res.status(500).json({ serverMsg: "Feedback error" })
+  }
+})
+
+TravelBuddy_App.post("/logout", (req, res) => {
+  req.session?.destroy((err) => {
+    if (err) {
+      console.log("Logout error:", err);
+      return res.status(500).json({ serverMsg: "Logout failed" });
+    }
+    res.clearCookie("connect.sid");
+    res.json({ serverMsg: "Logged out successfully" });
+  });
+});
 
 TravelBuddy_App.get("/", (req, res) => {
-  res.send("Travel Buddy API is running.");
-});
+  res.send("Travel Buddy API is running.")
+})

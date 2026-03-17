@@ -1,6 +1,3 @@
-// Normal user model (passenger)
-// © 2025 Travel Buddy. All rights reserved.
-
 import mongoose from "mongoose"
 
 const userSchema = new mongoose.Schema(
