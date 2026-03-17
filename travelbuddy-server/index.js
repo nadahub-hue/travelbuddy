@@ -47,20 +47,56 @@ TravelBuddy_App.use(
 TravelBuddy_App.use(authRoutes);
 TravelBuddy_App.use(paymentRoutes);
 
-try {
-  const TravelBuddy_App_ConnectionString = `mongodb+srv://${process.env.MONGODB_USERID}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}/${process.env.MONGODB_DATABASE}`;
+// Database Connection Configuration
+let TravelBuddy_App_ConnectionString;
 
+// Check if using local MongoDB or cloud MongoDB
+const isLocalMongoDB = process.env.MONGODB_CLUSTER && process.env.MONGODB_CLUSTER.includes('localhost');
+
+if (isLocalMongoDB) {
+  // Local MongoDB connection
+  TravelBuddy_App_ConnectionString = `mongodb://${process.env.MONGODB_CLUSTER}/${process.env.MONGODB_DATABASE}`;
+  console.log(">>> Connecting to LOCAL MongoDB <<<");
+} else {
+  // Cloud MongoDB Atlas connection (SRV)
+  TravelBuddy_App_ConnectionString = `mongodb+srv://${process.env.MONGODB_USERID}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}/${process.env.MONGODB_DATABASE}`;
+  console.log(">>> Connecting to CLOUD MongoDB Atlas <<<");
+}
+
+console.log(">>> Connection String:", TravelBuddy_App_ConnectionString.replace(/\/\/.*:.*@/, '//***:***@'), "<<<");
+
+try {
   await mongoose.connect(TravelBuddy_App_ConnectionString, {
-    serverSelectionTimeoutMS: 5000,
+    serverSelectionTimeoutMS: 10000,
     socketTimeoutMS: 45000,
     maxPoolSize: 10,
     family: 4,
   });
 
-  console.log("Database Connection Success !");
+  console.log("✓ Database Connection Success !");
 } catch (err) {
-  console.error("Database Connection Failed:", err);
-  process.exit(1);
+  console.error("✗ Database Connection Failed:");
+  console.error("  Error:", err.message);
+  
+  // Provide helpful suggestions based on error type
+  if (err.code === 'ENODATA' || err.message.includes('querySrv')) {
+    console.error("\n  Possible causes:");
+    console.error("  1. MongoDB Atlas cluster is paused (free tier pauses after inactivity)");
+    console.error("  2. Cluster name is incorrect in .env file");
+    console.error("  3. Network/firewall blocking DNS SRV lookup");
+    console.error("\n  Solutions:");
+    console.error("  - Resume your cluster at https://cloud.mongodb.com");
+    console.error("  - Or switch to local MongoDB by setting MONGODB_CLUSTER=localhost:27017");
+  } else if (err.message.includes('Authentication failed')) {
+    console.error("\n  Solution: Check MONGODB_USERID and MONGODB_PASSWORD in .env file");
+  } else if (err.message.includes('ECONNREFUSED')) {
+    console.error("\n  Solution: Make sure MongoDB is running locally or check the host/port");
+  }
+  
+  console.error("\n>>> Server will continue without database connection <<<");
+  // Don't exit - let server run so user can fix issue and restart
+  // Remove this line if you want the server to crash on DB failure:
+  // process.exit(1);
 }
 
 const PORT = process.env.PORT || 7500;
