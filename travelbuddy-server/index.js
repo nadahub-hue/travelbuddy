@@ -6,10 +6,13 @@ import cors from "cors";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import session from "express-session";
+import http from "http";
+import { Server } from "socket.io";
 
 import driverRoutes from "./routes/driverRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
 
 import userModel from "./models/userModel.js";
 import taxiDriverModel from "./models/taxiDriverModel.js";
@@ -17,332 +20,507 @@ import tripModel from "./models/tripModel.js";
 import bookingModel from "./models/bookingModel.js";
 import feedbackModel from "./models/feedbackModel.js";
 import adminModel from "./models/adminModel.js";
+import paymentModel from "./models/paymentModel.js";
 
+/* -------------------- Setup -------------------- */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load environment variables FIRST
 dotenv.config({ path: path.join(__dirname, ".env") });
 
-console.log("===== ENV CHECK =====");
-console.log("EMAIL_USER =", process.env.EMAIL_USER);
-console.log("EMAIL_PASS exists =", !!process.env.EMAIL_PASS);
-console.log("PORT =", process.env.PORT);
-console.log("ENV PATH =", path.join(__dirname, ".env"));
-console.log("=====================");
+const app = express();
+const server = http.createServer(app);
 
-// Create Express app
-const TravelBuddy_App = express();
+/* -------------------- Debug env -------------------- */
+console.log("PORT:", process.env.PORT);
+console.log("CLIENT_URL:", process.env.CLIENT_URL);
+console.log("MONGODB_URI exists:", !!process.env.MONGODB_URI);
 
-// Middleware
-TravelBuddy_App.use(express.json());
-TravelBuddy_App.use(cors());
-TravelBuddy_App.use(
-  session({
-    secret: process.env.SESSION_SECRET || "a-very-strong-secret-key",
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false },
+/* -------------------- Middleware -------------------- */
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    credentials: true,
   })
 );
 
-// Routes
-TravelBuddy_App.use(authRoutes);
-TravelBuddy_App.use(paymentRoutes);
-TravelBuddy_App.use("/api/drivers", driverRoutes);
+app.use(express.json());
 
-// Database Connection
-let TravelBuddy_App_ConnectionString;
-const isLocalMongoDB = process.env.MONGODB_CLUSTER && process.env.MONGODB_CLUSTER.includes("localhost");
-
-if (isLocalMongoDB) {
-  TravelBuddy_App_ConnectionString = `mongodb://${process.env.MONGODB_CLUSTER}/${process.env.MONGODB_DATABASE}`;
-  console.log(">>> Connecting to LOCAL MongoDB <<<");
-} else {
-  TravelBuddy_App_ConnectionString = `mongodb+srv://${process.env.MONGODB_USERID}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}/${process.env.MONGODB_DATABASE}`;
-  console.log(">>> Connecting to CLOUD MongoDB Atlas <<<");
-}
-
-console.log(
-  ">>> Connection String:",
-  TravelBuddy_App_ConnectionString.replace(/\/\/.*:.*@/, "//***:***@"),
-  "<<<"
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "default_secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false,
+      httpOnly: true,
+    },
+  })
 );
 
-(async () => {
-  try {
-    await mongoose.connect(TravelBuddy_App_ConnectionString, {
-      serverSelectionTimeoutMS: 10000,
-      socketTimeoutMS: 45000,
-      maxPoolSize: 10,
-      family: 4,
-    });
-    console.log("✓ Database Connection Success !");
-  } catch (err) {
-    console.error("✗ Database Connection Failed:");
-    console.error("  Error:", err.message);
-    if (err.code === "ENODATA" || err.message.includes("querySrv")) {
-      console.error("\n  Possible causes:");
-      console.error("  1. MongoDB Atlas cluster is paused (free tier pauses after inactivity)");
-      console.error("  2. Cluster name is incorrect in .env file");
-      console.error("  3. Network/firewall blocking DNS SRV lookup");
-      console.error("\n  Solutions:");
-      console.error("  - Resume your cluster at https://cloud.mongodb.com");
-      console.error("  - Or switch to local MongoDB by setting MONGODB_CLUSTER=localhost:27017");
-    } else if (err.message.includes("Authentication failed")) {
-      console.error("\n  Solution: Check MONGODB_USERID and MONGODB_PASSWORD in .env file");
-    } else if (err.message.includes("ECONNREFUSED")) {
-      console.error("\n  Solution: Make sure MongoDB is running locally or check the host/port");
-    }
-    console.error("\n>>> Server will continue without database connection <<<");
-  }
-})();
-
-const PORT = process.env.PORT || 7500;
-TravelBuddy_App.listen(PORT, () => {
-  console.log(`Travel Buddy Server running at port ${PORT} ...!`);
+/* -------------------- Socket.IO -------------------- */
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    credentials: true,
+  },
 });
 
-// Custom endpoints
-TravelBuddy_App.post("/userRegister", async (req, res) => {
+const users = {};
+
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  socket.on("join", (userId) => {
+    users[userId] = socket.id;
+  });
+
+  socket.on("sendMessage", ({ senderId, receiverId, text }) => {
+    const receiverSocket = users[receiverId];
+
+    if (receiverSocket) {
+      io.to(receiverSocket).emit("receiveMessage", {
+        senderId,
+        text,
+      });
+    }
+  });
+
+  socket.on("disconnect", () => {
+    for (const id in users) {
+      if (users[id] === socket.id) {
+        delete users[id];
+        break;
+      }
+    }
+  });
+});
+
+/* -------------------- Routes -------------------- */
+app.use(authRoutes);
+app.use(paymentRoutes);
+app.use("/api/drivers", driverRoutes);
+app.use("/chat", chatRoutes);
+
+/* -------------------- User Register -------------------- */
+app.post("/userRegister", async (req, res) => {
   try {
-    const exist = await userModel.findOne({ userEmail: req.body.email });
-    if (exist) {
-      return res.json({ serverMsg: "User already exist !", flag: false });
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        flag: false,
+        serverMsg: "Database not connected",
+      });
     }
 
-    const encryptedPassword = await bcrypt.hash(req.body.pwd, 10);
+    const exist = await userModel.findOne({ userEmail: req.body.email });
+
+    if (exist) {
+      return res.json({
+        serverMsg: "User already exists!",
+        flag: false,
+      });
+    }
+
+    const hashed = await bcrypt.hash(req.body.pwd, 10);
 
     await userModel.create({
       userName: req.body.fullName,
       userPhone: req.body.phone,
       userEmail: req.body.email,
-      userPassword: encryptedPassword,
+      userPassword: hashed,
       userGender: req.body.gender,
       preferredGender: req.body.preferredGender || "any",
     });
 
-    res.json({ serverMsg: "Registration Success !", flag: true });
-  } catch (err) {
-    console.error("userRegister error:", err);
-    res.status(500).json({ serverMsg: "Registration error", flag: false });
-  }
-});
-
-TravelBuddy_App.post("/userLogin", async (req, res) => {
-  try {
-    const userExist = await userModel.findOne({
-      userEmail: req.body.userEmail,
-    });
-
-    if (!userExist) {
-      return res.json({ serverMsg: "User not found !", loginStatus: false });
-    }
-
-    const matchPassword = await bcrypt.compare(
-      req.body.userPassword,
-      userExist.userPassword
-    );
-
-    if (!matchPassword) {
-      return res.json({
-        serverMsg: "Incorrect Password !",
-        loginStatus: false,
-      });
-    }
-
-    res.json({ serverMsg: "Welcome", loginStatus: true, user: userExist });
-  } catch (err) {
-    console.error("userLogin error:", err);
-    res.status(500).json({ serverMsg: "Login error", loginStatus: false });
-  }
-});
-
-TravelBuddy_App.post("/driverRegister", async (req, res) => {
-  try {
-    const {
-      driverName,
-      driverPhone,
-      driverEmail,
-      driverPassword,
-      licenseNumber,
-      taxiPermitNumber,
-      vehicleModel,
-      plateNumber,
-      nationalId,
-      experienceYears,
-    } = req.body;
-
-    if (
-      !driverName ||
-      !driverPhone ||
-      !driverEmail ||
-      !driverPassword ||
-      !licenseNumber ||
-      !taxiPermitNumber ||
-      !vehicleModel ||
-      !plateNumber ||
-      !nationalId ||
-      experienceYears === undefined
-    ) {
-      return res.json({
-        serverMsg: "Please fill in all driver details !",
-        flag: false,
-      });
-    }
-
-    const driverExist = await taxiDriverModel.findOne({
-      $or: [
-        { driverEmail: driverEmail },
-        { driverPhone: driverPhone },
-        { licenseNumber: licenseNumber },
-        { taxiPermitNumber: taxiPermitNumber },
-        { plateNumber: plateNumber },
-        { nationalId: nationalId },
-      ],
-    });
-
-    if (driverExist) {
-      return res.json({
-        serverMsg:
-          "Driver already exists with this email, phone, license, permit, plate number, or national ID !",
-        flag: false,
-      });
-    }
-
-    const encryptedPassword = await bcrypt.hash(driverPassword, 10);
-
-    await taxiDriverModel.create({
-      driverName,
-      driverPhone,
-      driverEmail,
-      driverPassword: encryptedPassword,
-      licenseNumber,
-      taxiPermitNumber,
-      vehicleModel,
-      plateNumber,
-      nationalId,
-      experienceYears,
-      status: "pending_verification",
-      isVerifiedDriver: false,
-    });
-
-    res.json({
-      serverMsg:
-        "Driver Registration Success ! Your account is pending verification.",
+    return res.json({
+      serverMsg: "Registration Success!",
       flag: true,
     });
   } catch (err) {
-    console.error("driverRegister error:", err);
-    res.status(500).json({
-      serverMsg: "Driver Registration error",
+    console.error("userRegister error:", err);
+    return res.status(500).json({
+      serverMsg: "Registration error",
       flag: false,
     });
   }
 });
 
-TravelBuddy_App.post("/driverLogin", async (req, res) => {
+/* -------------------- User Login -------------------- */
+app.post("/userLogin", async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        loginStatus: false,
+        serverMsg: "Database not connected",
+      });
+    }
+
+    const user = await userModel.findOne({
+      userEmail: req.body.userEmail,
+    });
+
+    if (!user) {
+      return res.json({
+        loginStatus: false,
+        serverMsg: "User not found",
+      });
+    }
+
+    const match = await bcrypt.compare(
+      req.body.userPassword,
+      user.userPassword
+    );
+
+    if (!match) {
+      return res.json({
+        loginStatus: false,
+        serverMsg: "Wrong password",
+      });
+    }
+
+    return res.json({
+      loginStatus: true,
+      serverMsg: "Welcome",
+      user,
+    });
+  } catch (err) {
+    console.error("userLogin error:", err);
+    return res.status(500).json({
+      loginStatus: false,
+      serverMsg: "Login error",
+    });
+  }
+});
+
+/* -------------------- Driver Register -------------------- */
+app.post("/driverRegister", async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        flag: false,
+        serverMsg: "Database not connected",
+      });
+    }
+
+    const exist = await taxiDriverModel.findOne({
+      driverEmail: req.body.driverEmail,
+    });
+
+    if (exist) {
+      return res.json({
+        serverMsg: "Driver already exists!",
+        flag: false,
+      });
+    }
+
+    const hashed = await bcrypt.hash(req.body.driverPassword, 10);
+
+    await taxiDriverModel.create({
+      driverName: req.body.driverName,
+      driverPhone: req.body.driverPhone,
+      driverEmail: req.body.driverEmail,
+      driverPassword: hashed,
+      licenseNumber: req.body.licenseNumber,
+      taxiPermitNumber: req.body.taxiPermitNumber,
+      vehicleModel: req.body.vehicleModel,
+      plateNumber: req.body.plateNumber,
+      nationalId: req.body.nationalId,
+      experienceYears: req.body.experienceYears,
+      status: "pending_verification",
+      isVerifiedDriver: false,
+    });
+
+    return res.json({
+      serverMsg: "Registered. Wait for admin approval.",
+      flag: true,
+    });
+  } catch (err) {
+    console.error("driverRegister error:", err);
+    return res.status(500).json({
+      serverMsg: "Driver error",
+      flag: false,
+    });
+  }
+});
+
+/* -------------------- Driver Login -------------------- */
+ 
+app.post("/driverLogin", async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        loginStatus: false,
+        serverMsg: "Database not connected",
+      });
+    }
+
     const driver = await taxiDriverModel.findOne({
       driverEmail: req.body.driverEmail,
     });
 
     if (!driver) {
       return res.json({
-        serverMsg: "Driver not found !",
         loginStatus: false,
+        serverMsg: "Driver not found",
       });
     }
 
-    const matchPassword = await bcrypt.compare(
+    const match = await bcrypt.compare(
       req.body.driverPassword,
       driver.driverPassword
     );
 
-    if (!matchPassword) {
+    if (!match) {
       return res.json({
-        serverMsg: "Incorrect Password !",
         loginStatus: false,
+        serverMsg: "Wrong password",
       });
     }
 
-    if (driver.status === "pending_verification") {
+    if (driver.status !== "verified") {
       return res.json({
-        serverMsg:
-          "Your account is still pending verification. Please wait for admin approval.",
         loginStatus: false,
+        serverMsg: `Driver status: ${driver.status}`,
       });
     }
 
-    if (driver.status === "rejected") {
-      return res.json({
-        serverMsg:
-          "Your driver account has been rejected. Please contact support.",
-        loginStatus: false,
-      });
-    }
-
-    if (!driver.isVerifiedDriver) {
-      return res.json({
-        serverMsg: "Driver account is not verified yet !",
-        loginStatus: false,
-      });
-    }
-
-    res.json({
-      serverMsg: "Welcome Driver",
+    return res.json({
       loginStatus: true,
+      serverMsg: "Welcome Driver",
       driver,
     });
   } catch (err) {
     console.error("driverLogin error:", err);
-    res.status(500).json({
-      serverMsg: "Driver login error",
+    return res.status(500).json({
       loginStatus: false,
+      serverMsg: "Driver login error",
     });
   }
 });
 
-TravelBuddy_App.post("/adminLogin", async (req, res) => {
+
+
+/* -------------------- Admin Login -------------------- */
+app.post("/adminLogin", async (req, res) => {
   try {
-    const adminExist = await adminModel.findOne({
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        loginStatus: false,
+        serverMsg: "Database not connected",
+      });
+    }
+
+    const admin = await adminModel.findOne({
       adminEmail: req.body.adminEmail,
     });
 
-    if (!adminExist) {
+    if (!admin) {
       return res.json({
-        serverMsg: "Admin not found !",
         loginStatus: false,
+        serverMsg: "Admin not found",
       });
     }
 
-    const matchPassword = await bcrypt.compare(
+    const match = await bcrypt.compare(
       req.body.adminPassword,
-      adminExist.adminPassword
+      admin.adminPassword
     );
 
-    if (!matchPassword) {
+    if (!match) {
       return res.json({
-        serverMsg: "Incorrect Password !",
         loginStatus: false,
+        serverMsg: "Incorrect password",
       });
     }
 
-    res.json({
-      serverMsg: "Welcome",
+    return res.json({
       loginStatus: true,
-      admin: adminExist,
+      serverMsg: "Admin login successful",
+      admin: {
+        _id: admin._id,
+        adminName: admin.adminName,
+        adminEmail: admin.adminEmail,
+      },
     });
   } catch (err) {
     console.error("adminLogin error:", err);
-    res.status(500).json({
-      serverMsg: "Login error",
+    return res.status(500).json({
       loginStatus: false,
+      serverMsg: "Admin login error",
     });
   }
 });
 
-TravelBuddy_App.get("/", (req, res) => {
-  res.send("Travel Buddy API is running.");
+/* -------------------- Create Trip -------------------- */
+app.post("/createTrip", async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        serverMsg: "Database not connected",
+      });
+    }
+
+    const trip = await tripModel.create(req.body);
+
+    return res.json({
+      serverMsg: "Trip created",
+      trip,
+    });
+  } catch (err) {
+    console.error("createTrip error:", err);
+    return res.status(500).json({
+      serverMsg: "Trip error",
+    });
+  }
 });
 
+/* -------------------- Search Trips -------------------- */
+app.get("/searchTrips", async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        serverMsg: "Database not connected",
+      });
+    }
+
+    const trips = await tripModel.find(req.query);
+    return res.json(trips);
+  } catch (err) {
+    console.error("searchTrips error:", err);
+    return res.status(500).json({
+      serverMsg: "Search error",
+    });
+  }
+});
+
+app.post("/confirmBooking", async (req, res) => {
+  try {
+    console.log("BODY:", req.body);
+
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        serverMsg: "Database not connected",
+      });
+    }
+
+    // ✅ validate tripId first
+    if (!req.body.tripId || !mongoose.Types.ObjectId.isValid(req.body.tripId)) {
+      return res.status(400).json({
+        serverMsg: "Invalid or missing tripId",
+      });
+    }
+
+    const trip = await tripModel.findById(req.body.tripId);
+
+    if (!trip) {
+      return res.status(404).json({
+        serverMsg: "Trip not found",
+      });
+    }
+
+    const booking = await bookingModel.create({
+      ...req.body,
+      status: "confirmed",
+    });
+
+    return res.json({
+      serverMsg: "Booking confirmed",
+      booking,
+    });
+  } catch (err) {
+    console.error("confirmBooking error:", err);
+    return res.status(500).json({
+      serverMsg: "Booking error",
+      error: err.message,
+    });
+  }
+});
+
+/* -------------------- Process Payment -------------------- */
+app.post("/processPayment", async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        serverMsg: "Database not connected",
+      });
+    }
+
+    const payment = await paymentModel.create({
+      ...req.body,
+      transactionId: "TXN-" + Date.now(),
+      paymentStatus: "success",
+    });
+
+    return res.json({
+      serverMsg: "Payment success",
+      payment,
+    });
+  } catch (err) {
+    console.error("processPayment error:", err);
+    return res.status(500).json({
+      serverMsg: "Payment failed",
+    });
+  }
+});
+
+/* -------------------- Send Feedback -------------------- */
+app.post("/sendFeedback", async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        serverMsg: "Database not connected",
+      });
+    }
+
+    const { userEmail, rating, comment } = req.body;
+
+    await feedbackModel.create({
+      userEmail,
+      rating,
+      comment,
+    });
+
+    return res.json({
+      serverMsg: "Feedback saved. Thank you!",
+    });
+  } catch (err) {
+    console.error("sendFeedback error:", err);
+    return res.status(500).json({
+      serverMsg: "Feedback error",
+    });
+  }
+});
+
+/* -------------------- Health Check -------------------- */
+app.get("/", (req, res) => {
+  res.send("Travel Buddy backend is running");
+});
+
+/* -------------------- Start Server -------------------- */
+const PORT = process.env.PORT || 7500;
+const MONGO_URI = process.env.MONGODB_URI;
+
+async function startServer() {
+  try {
+    if (!MONGO_URI) {
+      throw new Error("MONGODB_URI is missing in .env");
+    }
+
+    console.log("🔌 Connecting to MongoDB...");
+
+    await mongoose.connect(MONGO_URI, {
+      serverSelectionTimeoutMS: 10000,
+    });
+
+    console.log("✅ Database Connected");
+
+    server.listen(PORT, () => {
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error("❌ DB Connection Error:", err);
+    process.exit(1);
+  }
+}
+
+startServer();

@@ -51,7 +51,6 @@ export default function Register() {
           paddingBottom: "30px"
         }}
       >
-        {/* title */}
         <Row className="mb-4">
           <Col className="text-center">
             <h1
@@ -66,7 +65,6 @@ export default function Register() {
           </Col>
         </Row>
 
-        {/* toggle buttons */}
         <Row className="mb-4">
           <Col className="d-flex justify-content-center">
             <div
@@ -110,9 +108,7 @@ export default function Register() {
           </Col>
         </Row>
 
-        {/* form */}
         <form onSubmit={handleSubmit(onSubmit)}>
-          {/* Name */}
           <FormGroup className="mb-3">
             <div
               style={{
@@ -137,7 +133,6 @@ export default function Register() {
             <small className="text-danger">{errors.fullName?.message}</small>
           </FormGroup>
 
-          {/* Email */}
           <FormGroup className="mb-3">
             <div
               style={{
@@ -163,7 +158,6 @@ export default function Register() {
             <small className="text-danger">{errors.email?.message}</small>
           </FormGroup>
 
-          {/* Phone */}
           <FormGroup className="mb-3">
             <div
               style={{
@@ -188,7 +182,6 @@ export default function Register() {
             <small className="text-danger">{errors.phone?.message}</small>
           </FormGroup>
 
-          {/* Password */}
           <FormGroup className="mb-3">
             <div
               style={{
@@ -214,7 +207,6 @@ export default function Register() {
             <small className="text-danger">{errors.pwd?.message}</small>
           </FormGroup>
 
-          {/* Confirm password */}
           <FormGroup className="mb-4">
             <div
               style={{
@@ -240,7 +232,6 @@ export default function Register() {
             <small className="text-danger">{errors.cnfPwd?.message}</small>
           </FormGroup>
 
-          {/* Sign up button */}
           <Row className="mb-3">
             <Col className="text-center">
               <button
@@ -260,7 +251,6 @@ export default function Register() {
             </Col>
           </Row>
 
-          {/* Already have an account */}
           <Row>
             <Col className="text-center">
               <span style={{ color: "#155b6a", fontSize: "1rem" }}>
@@ -279,7 +269,6 @@ export default function Register() {
             </Col>
           </Row>
 
-          {/* server / duplicate-account message */}
           {serverMsg && (
             <div className="alert alert-danger mt-3 text-center">
               {serverMsg}

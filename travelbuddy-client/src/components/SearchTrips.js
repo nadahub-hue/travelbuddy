@@ -1,4 +1,4 @@
-import { Container, Button } from "reactstrap";
+import { Container } from "reactstrap";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -26,9 +26,23 @@ export default function SearchTrips() {
     });
   };
 
+  const labelStyle = {
+    fontWeight: 500,
+    marginBottom: "3px",
+    color: "#000",
+  };
+
+  const inputStyle = {
+    border: "none",
+    outline: "none",
+    width: "100%",
+    fontSize: "1rem",
+    color: "#000",
+    backgroundColor: "transparent",
+  };
+
   return (
     <Container fluid className="p-0">
-      {/* PAGE TITLE */}
       <h1
         style={{
           textAlign: "center",
@@ -41,7 +55,6 @@ export default function SearchTrips() {
         Where do you want to go?
       </h1>
 
-      {/* SEARCH BAR */}
       <form onSubmit={handleSearch}>
         <div
           style={{
@@ -55,7 +68,6 @@ export default function SearchTrips() {
             boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
           }}
         >
-          {/* LEFT INPUT SECTION */}
           <div
             style={{
               flex: 1,
@@ -66,26 +78,17 @@ export default function SearchTrips() {
               fontSize: "1.1rem",
             }}
           >
-            {/* Leaving from */}
             <div style={{ borderRight: "1px solid #ddd", paddingRight: "15px" }}>
-              <div style={{ fontWeight: 500, marginBottom: "3px" }}>
-                Leaving from
-              </div>
+              <div style={labelStyle}>Leaving from</div>
               <input
                 type="text"
                 value={fromLocation}
                 onChange={(e) => setFromLocation(e.target.value)}
                 required
-                style={{
-                  border: "none",
-                  outline: "none",
-                  width: "100%",
-                  fontSize: "1rem",
-                }}
+                style={inputStyle}
               />
             </div>
 
-            {/* Going to */}
             <div
               style={{
                 borderRight: "1px solid #ddd",
@@ -93,24 +96,16 @@ export default function SearchTrips() {
                 paddingRight: "15px",
               }}
             >
-              <div style={{ fontWeight: 500, marginBottom: "3px" }}>
-                Going To
-              </div>
+              <div style={labelStyle}>Going To</div>
               <input
                 type="text"
                 value={toLocation}
                 onChange={(e) => setToLocation(e.target.value)}
                 required
-                style={{
-                  border: "none",
-                  outline: "none",
-                  width: "100%",
-                  fontSize: "1rem",
-                }}
+                style={inputStyle}
               />
             </div>
 
-            {/* Date */}
             <div
               style={{
                 borderRight: "1px solid #ddd",
@@ -118,23 +113,16 @@ export default function SearchTrips() {
                 paddingRight: "15px",
               }}
             >
-              <div style={{ fontWeight: 500, marginBottom: "3px" }}>Today</div>
+              <div style={labelStyle}>Today</div>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 required
-                style={{
-                  border: "none",
-                  outline: "none",
-                  width: "100%",
-                  fontSize: "1rem",
-                  backgroundColor: "transparent",
-                }}
+                style={inputStyle}
               />
             </div>
 
-            {/* Gender */}
             <div style={{ display: "flex", flexDirection: "column", paddingLeft: "15px" }}>
               <div
                 style={{
@@ -177,7 +165,6 @@ export default function SearchTrips() {
             </div>
           </div>
 
-          {/* SEARCH BUTTON */}
           <button
             type="submit"
             style={{
@@ -196,7 +183,6 @@ export default function SearchTrips() {
         </div>
       </form>
 
-      {/* Spacing */}
       <div style={{ marginTop: "35px", textAlign: "center" }}>
         <h2
           style={{
@@ -207,19 +193,8 @@ export default function SearchTrips() {
         >
           Find the perfect ride without breaking the bank
         </h2>
-        <br></br>
-        <Button
-          onClick={() => navigate("/about")}
-          style={{
-            backgroundColor: "#9854c6",
-            color: "#ffffff"
-          }}
-        >
-          Back
-        </Button>
-        <br /> <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+        <br /><br /><br /><br /><br /><br /><br /><br /><br />
       </div>
-
     </Container>
   );
 }

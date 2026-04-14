@@ -32,7 +32,6 @@ export default function Booking() {
   return (
     <Container fluid className="py-4">
       <Container style={{ maxWidth: "900px" }}>
-        {/* Page Title */}
         <Row className="mb-4">
           <Col className="text-center">
             <h2 style={{ color: "#4b0082", fontWeight: "700" }}>
@@ -45,7 +44,6 @@ export default function Booking() {
           </Col>
         </Row>
 
-        {/* Form */}
         <form onSubmit={handleSubmit}>
           <Row className="mb-3">
             <Col md="6">
@@ -79,7 +77,6 @@ export default function Booking() {
             </Col>
           </Row>
 
-          {/* Save Button */}
           <Row className="mb-3">
             <Col className="text-center">
               <Button
@@ -96,7 +93,6 @@ export default function Booking() {
             </Col>
           </Row>
 
-          {/* Success Message */}
           {msg && (
             <Row>
               <Col className="text-center">
@@ -114,7 +110,6 @@ export default function Booking() {
           )}
         </form>
 
-        {/* Map Box */}
         <Row>
           <Col>
             <div
@@ -133,17 +128,6 @@ export default function Booking() {
               ></iframe>
             </div>
           </Col>
-
-          <Button
-            onClick={() => navigate("/search")}
-            style={{
-              backgroundColor: "#9854c6",
-              color: "#ffffff",
-              marginTop: "15px",
-            }}
-          >
-            Back
-          </Button>
         </Row>
       </Container>
     </Container>

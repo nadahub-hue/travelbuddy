@@ -13,7 +13,7 @@ export default function Footer() {
         display: "block"
       }}
     >
-      Travel Buddy 2025 ©
+      Travel Buddy 2026 ©
     </div>
   );
 }

@@ -14,14 +14,11 @@ export default function AboutUs() {
       }}
     >
 
-      {/* ❌ NO LOGO, NO HOME, NO SEARCH — EMPTY TOP AREA */}
       <div style={{ height: "30px" }}></div>
 
-      {/* MAIN CONTENT */}
       <Container fluid style={{ padding: "0px 60px 50px 60px" }}>
         <Row style={{ alignItems: "flex-start" }}>
 
-          {/* LEFT SIDE CONTENT */}
           <Col md="6" xs="12">
             <h1
               style={{
@@ -58,19 +55,8 @@ export default function AboutUs() {
               and high transportation costs.
             </p>
 
-
-            <Button
-              onClick={() => navigate("/home")}
-              style={{
-                backgroundColor: "#9854c6",
-                color: "#ffffff"
-              }}
-            >
-              Back
-            </Button>
           </Col>
 
-          {/* RIGHT SIDE IMAGE */}
           <Col
             md="6"
             xs="12"

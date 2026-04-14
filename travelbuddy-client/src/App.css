@@ -37,25 +37,34 @@
   }
 }
 
-/* LIGHT MODE */
 body.light {
   background-color: #ffffff;
   color: #000000;
 }
 
-/* DARK MODE */
 body.dark {
   background-color: #121212;
   color: #ffffff;
 }
 
-/* example cards */
 body.dark .card {
   background-color: #1f1f1f;
   color: #ffffff;
 }
 
-/* navbar */
 body.dark .navbar {
-  background-color: #2b2b2b !important;
+  background-color: #1f1721 !important;
+}
+
+
+::-webkit-scrollbar-track {
+  background-color: #7e5d83;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #573a5f;
+}
+
+::-webkit-scrollbar-track:hover {
+    background-color: #c61ce0;
 }

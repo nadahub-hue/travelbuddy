@@ -11,7 +11,7 @@ import cardsImg from "../images/credit-card.png";
 
 export default function CardPayment() {
   const [msg, setMsg] = useState("");
-  const [msgType, setMsgType] = useState("info"); // success | error | info
+  const [msgType, setMsgType] = useState("info"); 
   const navigate = useNavigate();
 
   const {
@@ -29,7 +29,7 @@ export default function CardPayment() {
   try {
     const amount = 2.0;
 
-    const res = await fetch("https://github.com/nadahub-hue/travelbuddy", {
+    const res = await fetch("http://localhost:7500/processPayment", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

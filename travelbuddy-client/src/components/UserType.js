@@ -11,7 +11,6 @@ export default function UserType() {
       style={{ minHeight: "100vh", backgroundColor: "#f6e9ff" }}
     >
       <Container className="text-center">
-        {/* Title */}
         <Row className="mb-5">
           <Col>
             <h1
@@ -26,9 +25,7 @@ export default function UserType() {
           </Col>
         </Row>
 
-        {/* Two big purple boxes */}
         <Row className="justify-content-center mt-4">
-          {/* Taxi Driver */}
           <Col
             xs="10"
             md="4"
@@ -51,7 +48,6 @@ export default function UserType() {
             </Button>
           </Col>
 
-          {/* User */}
           <Col xs="10" md="4" className="d-flex justify-content-center">
             <Button
               onClick={() => navigate("/register")}
@@ -71,7 +67,6 @@ export default function UserType() {
           </Col>
 
 
-          {/* Admin */}
           <Col xs="10" md="4" className="d-flex justify-content-center">
             <Button
               onClick={() => navigate("/admin-login")}

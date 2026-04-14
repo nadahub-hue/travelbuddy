@@ -1,6 +1,5 @@
 import * as yup from "yup";
 
-// Luhn algorithm (checks card number)
 function isValidCardNumber(value = "") {
   const digits = value.replace(/\s+/g, "");
   if (!/^\d+$/.test(digits)) return false;
@@ -23,7 +22,6 @@ function isValidCardNumber(value = "") {
   return sum % 10 === 0;
 }
 
-// Expiry validation: MM/YY and not expired
 function isValidExpiry(value = "") {
   const v = value.trim();
   if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(v)) return false;
@@ -32,14 +30,12 @@ function isValidExpiry(value = "") {
   const mm = parseInt(mmStr, 10);
   const yy = parseInt(yyStr, 10);
 
-  // Convert YY to 20YY (good for student projects)
   const fullYear = 2000 + yy;
 
   const now = new Date();
-  const currentMonth = now.getMonth() + 1; // 1-12
+  const currentMonth = now.getMonth() + 1; 
   const currentYear = now.getFullYear();
 
-  // card valid through the end of expiry month
   if (fullYear < currentYear) return false;
   if (fullYear === currentYear && mm < currentMonth) return false;
 
@@ -57,7 +53,7 @@ const paymentValidationSchema = yup.object({
   number: yup
     .string()
     .required("Card number is required")
-    .transform((val) => (val ? val.replace(/\s+/g, "") : val)) // remove spaces
+    .transform((val) => (val ? val.replace(/\s+/g, "") : val)) 
     .matches(/^\d+$/, "Card number must contain digits only")
     .min(13, "Card number is too short")
     .max(19, "Card number is too long")

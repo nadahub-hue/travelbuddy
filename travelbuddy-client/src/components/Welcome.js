@@ -16,13 +16,11 @@ export default function Welcome() {
         className="m-0 d-flex flex-column justify-content-between   "
         style={{ minHeight: "100vh" }}
       >
-        {/* top part: title + image */}
         <Col className="d-flex align-items-center justify-content-center">
           <Row
             className="w-100 m-0 align-items-center justify-content-center"
             style={{ maxWidth: "900px" }}
           >
-            {/* LEFT SIDE: Travel + Buddy */}
             <Col md="6" className="text-center text-md-start">
               <h1
                 style={{
@@ -47,7 +45,6 @@ export default function Welcome() {
               </h1>
             </Col>
 
-            {/* RIGHT SIDE: image */}
             <Col
               md="6"
               className="text-center mt-4 mt-md-0 d-flex flex-column align-items-center"
@@ -61,7 +58,6 @@ export default function Welcome() {
           </Row>
         </Col>
 
-        {/* Center Welcome text ABOVE button */}
         <Col className="text-center mt-3">
           <p
             style={{
@@ -75,18 +71,16 @@ export default function Welcome() {
           </p>
         </Col>
 
-        {/* bottom purple bar button */}
         <Col xs="12" className="p-0">
-         {/* Bottom Purple Full-Width Button */}
 <div
   style={{
-    width: "100vw",       // full viewport width
+    width: "100vw",       
     margin: 0,
     padding: 0,
     position: "relative",
     left: "50%",
     right: "50%",
-    marginLeft: "-50vw",  // remove container margins
+    marginLeft: "-50vw",  
     marginRight: "-50vw"
   }}
 >

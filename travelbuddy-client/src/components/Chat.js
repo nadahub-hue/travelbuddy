@@ -1,164 +1,229 @@
-import { Container, Row, Col, Button } from "reactstrap";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import boyIcon from "../images/avatar-design.png";
-import girlIcon from "../images/female (1).png";
-import sendIcon from "../images/fast-forward.png";
+import { Container } from "reactstrap";
+import { useState, useRef, useEffect } from "react";
+import maleIcon from "../images/male.png";
+import femaleIcon from "../images/female.png";
 
-export default function Chat() {
-  const [messages, setMessages] = useState([]);
-  const [text, setText] = useState("");
-  const [nextSender, setNextSender] = useState("girl");
-  const navigate = useNavigate();
+export default function ChatPage() {
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      sender: "female",
+      text: "Hi! Are you going to Muscat today?",
+      time: "10:00 AM",
+    },
+    {
+      id: 2,
+      sender: "male",
+      text: "Yes, I’m leaving at 3:00 PM.",
+      time: "10:02 AM",
+    },
+    {
+      id: 3,
+      sender: "female",
+      text: "Great, can I join the trip?",
+      time: "10:03 AM",
+    },
+  ]);
 
-  const handleSend = (e) => {
-    e.preventDefault();
-    if (!text.trim()) return;
+  const [newMessage, setNewMessage] = useState("");
+  const messagesEndRef = useRef(null);
 
-    const newMsg = {
+  const handleSend = () => {
+    if (!newMessage.trim()) return;
+
+    const message = {
       id: Date.now(),
-      text: text.trim(),
-      sender: nextSender
+      sender: "male", // current user
+      text: newMessage,
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
     };
 
-    setMessages((old) => [...old, newMsg]);
-    setText("");
-    setNextSender((s) => (s === "girl" ? "boy" : "girl"));
+    setMessages((prev) => [...prev, message]);
+    setNewMessage("");
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   return (
-    <>
     <Container
       fluid
-      className="d-flex justify-content-center"
-      style={{  minHeight: "100vh", paddingTop: 40 }}
+      className="p-0"
+      style={{
+        backgroundColor: "#f5f5f5",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
     >
-      <Col md="8" lg="6">
-        {/* TOP TWO PEOPLE */}
-        <div
+      {/* Header */}
+      <div
+        style={{
+          backgroundColor: "#ffffff",
+          padding: "18px 30px",
+          borderBottom: "1px solid #ddd",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "18px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+        }}
+      >
+        <img
+          src={maleIcon}
+          alt="Male"
           style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 30,
-            marginBottom: 20
+            width: "55px",
+            height: "55px",
+            borderRadius: "50%",
+            objectFit: "cover",
           }}
-        >
-          <img src={boyIcon} alt="boy" style={{ height: 70 }} />
-          <img src={girlIcon} alt="girl" style={{ height: 70 }} />
-        </div>
-
-        {/* THIN LINE */}
-        <div
+        />
+        <img
+          src={femaleIcon}
+          alt="Female"
           style={{
-            borderTop: "1px solid #444",
-            marginBottom: 40
+            width: "55px",
+            height: "55px",
+            borderRadius: "50%",
+            objectFit: "cover",
+          }}
+        />
+      </div>
+
+      {/* Chat messages */}
+      <div
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          padding: "25px 20px 120px 20px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "14px",
+          maxWidth: "900px",
+          width: "100%",
+          margin: "0 auto",
+        }}
+      >
+        {messages.map((msg) => {
+          const isCurrentUser = msg.sender === "male";
+
+          return (
+            <div
+              key={msg.id}
+              style={{
+                display: "flex",
+                justifyContent: isCurrentUser ? "flex-end" : "flex-start",
+              }}
+            >
+              <div
+                style={{
+                  maxWidth: "70%",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: isCurrentUser ? "flex-end" : "flex-start",
+                }}
+              >
+                <div
+                  style={{
+                    backgroundColor: isCurrentUser ? "#4b1a9a" : "#ffffff",
+                    color: isCurrentUser ? "#ffffff" : "#222",
+                    padding: "12px 18px",
+                    borderRadius: isCurrentUser
+                      ? "18px 18px 4px 18px"
+                      : "18px 18px 18px 4px",
+                    fontSize: "1rem",
+                    lineHeight: "1.4",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {msg.text}
+                </div>
+
+                <span
+                  style={{
+                    marginTop: "5px",
+                    fontSize: "0.8rem",
+                    color: "#777",
+                    padding: "0 6px",
+                  }}
+                >
+                  {msg.time}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Message input */}
+      <div
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "90%",
+          maxWidth: "900px",
+          backgroundColor: "#ffffff",
+          borderRadius: "40px",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+          display: "flex",
+          alignItems: "center",
+          padding: "10px 14px 10px 22px",
+        }}
+      >
+        <input
+          type="text"
+          placeholder="Write message..."
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          onKeyDown={handleKeyDown}
+          style={{
+            flex: 1,
+            border: "none",
+            outline: "none",
+            fontSize: "1.1rem",
+            backgroundColor: "transparent",
+            color: "#333",
           }}
         />
 
-        {/* CHAT BUBBLES */}
-        <div style={{ minHeight: 220, marginBottom: 40 }}>
-          {messages.map((m) => {
-            const isGirl = m.sender === "girl";
-            return (
-              <div
-                key={m.id}
-                style={{
-                  display: "flex",
-                  justifyContent: isGirl ? "flex-start" : "flex-end",
-                  marginBottom: 20
-                }}
-              >
-                {isGirl && (
-                  <img
-                    src={girlIcon}
-                    alt="girl"
-                    style={{ height: 60, marginRight: 15 }}
-                  />
-                )}
-
-                <div
-                  style={{
-                    backgroundColor: "#ffffff",
-                    borderRadius: 30,
-                    padding: "18px 26px",
-                    maxWidth: "60%",
-                    fontSize: "1rem"
-                  }}
-                >
-                  {m.text}
-                </div>
-
-                {!isGirl && (
-                  <img
-                    src={boyIcon}
-                    alt="boy"
-                    style={{ height: 60, marginLeft: 15 }}
-                  />
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* INPUT AREA LIKE IN THE DESIGN */}
-        <form onSubmit={handleSend}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center"
-            }}
-          >
-            <div
-              style={{
-                backgroundColor: "#ffffff",
-                borderRadius: 30,
-                padding: "10px 20px",
-                display: "flex",
-                alignItems: "center",
-                width: "70%",
-                boxShadow: "0 4px 8px rgba(0,0,0,0.1)"
-              }}
-            >
-              <input
-                type="text"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="Write Message"
-                style={{
-                  border: "none",
-                  outline: "none",
-                  flex: 1,
-                  fontSize: "1.05rem",
-                  backgroundColor: "transparent"
-                }}
-              />
-              <Button
-                type="submit"
-                style={{
-                  border: "none",
-                  backgroundColor: "transparent",
-                  padding: 0
-                }}
-              >
-                <img src={sendIcon} alt="send" style={{ height: 28 }} />
-              </Button>
-            </div>
-          </div>
-        </form>
-      </Col>
-      
+        <button
+          onClick={handleSend}
+          style={{
+            border: "none",
+            backgroundColor: "#f4b400",
+            color: "#fff",
+            width: "52px",
+            height: "52px",
+            borderRadius: "50%",
+            fontSize: "1.5rem",
+            fontWeight: "bold",
+            cursor: "pointer",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginLeft: "10px",
+          }}
+        >
+          ➤
+        </button>
+      </div>
     </Container>
-    <div>
-            <Button
-            onClick={() => navigate("/conform-booking")}
-            style={{
-              backgroundColor: "#9854c6",
-              color: "#ffffff",
-            }}
-          >
-            Back
-          </Button>
-          </div>
-          </>
   );
 }

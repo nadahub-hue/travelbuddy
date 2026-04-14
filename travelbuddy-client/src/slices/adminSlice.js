@@ -1,18 +1,15 @@
-// src/slices/adminSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-// ADMIN LOGIN THUNK
-export const adminLoginThunk = createAsyncThunk(
-  "admin/login",
+export const adminLoginThunk = createAsyncThunk("admin/login",
   async ({ adminEmail, adminPassword }, { rejectWithValue }) => {
     try {
-      const res = await fetch("https://github.com/nadahub-hue/travelbuddy", {
+      const res = await fetch("http://localhost:7500/adminLogin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ adminEmail, adminPassword })
       });
 
-      const data = await res.json(); // {loginStatus, serverMsg, admin}
+      const data = await res.json(); 
       return data;
     } catch (err) {
       return rejectWithValue({ loginStatus: false, serverMsg: "Login failed" });
@@ -36,7 +33,6 @@ const adminSlice = createSlice({
     }
   },
   extraReducers: (builder) => {
-    // LOGIN
     builder
       .addCase(adminLoginThunk.pending, (state) => {
         state.loading = true;

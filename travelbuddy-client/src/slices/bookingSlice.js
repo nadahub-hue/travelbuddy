@@ -1,13 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-// CONFIRM BOOKING 
 export const confirmBookingThunk = createAsyncThunk(
   "booking/confirmBooking",
   async (data, { rejectWithValue }) => {
     try {
-      const res = await axios.post("https://github.com/nadahub-hue/travelbuddy", data);
-      return res.data; 
+      const res = await axios.post("http://localhost:7500/confirmBooking", data);
+      return res.data;
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { serverMsg: "Booking failed" }
@@ -35,11 +34,13 @@ const bookingSlice = createSlice({
       state.loading = true;
       state.msg = "";
     });
+
     builder.addCase(confirmBookingThunk.fulfilled, (state, action) => {
       state.loading = false;
       state.msg = action.payload.serverMsg || "";
       state.currentBooking = action.payload.booking || null;
     });
+
     builder.addCase(confirmBookingThunk.rejected, (state, action) => {
       state.loading = false;
       state.msg = action.payload?.serverMsg || "Booking error";

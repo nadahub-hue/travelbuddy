@@ -7,6 +7,7 @@ import travelBuddyStore from "./store/travelBuddyStore"
 import { ThemeProvider } from "./components/ThemeContext";
 import "./App.css";
 
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(

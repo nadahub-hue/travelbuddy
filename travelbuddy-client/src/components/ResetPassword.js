@@ -22,7 +22,7 @@ export default function ResetPassword() {
     }
 
     try {
-      const res = await fetch("https://github.com/nadahub-hue/travelbuddy", {
+      const res = await fetch("http://localhost:7500/userRegister", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, newPassword }),

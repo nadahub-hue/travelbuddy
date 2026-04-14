@@ -36,7 +36,6 @@ export default function Login() {
           paddingBottom: "30px"
         }}
       >
-        {/* title */}
         <Row className="mb-4">
           <Col className="text-center">
             <h1
@@ -51,7 +50,6 @@ export default function Login() {
           </Col>
         </Row>
 
-        {/* toggle buttons: Login (active) / Sign up */}
         <Row className="mb-4">
           <Col className="d-flex justify-content-center">
             <div
@@ -61,7 +59,6 @@ export default function Login() {
                 overflow: "hidden"
               }}
             >
-              {/* Login tab - active */}
               <button
                 type="button"
                 style={{
@@ -77,7 +74,6 @@ export default function Login() {
                 Login
               </button>
 
-              {/* Sign up tab */}
               <button
                 type="button"
                 onClick={() => navigate("/register")}
@@ -97,9 +93,7 @@ export default function Login() {
           </Col>
         </Row>
 
-        {/* form */}
         <form onSubmit={handleLogin}>
-          {/* username/email */}
           <FormGroup className="mb-3">
             <div
               style={{
@@ -122,7 +116,6 @@ export default function Login() {
             </div>
           </FormGroup>
 
-          {/* password */}
           <FormGroup className="mb-2">
             <div
               style={{
@@ -145,7 +138,6 @@ export default function Login() {
             </div>
           </FormGroup>
 
-          {/* forgot password */}
           <Row className="mb-3">
             <Col className="text-start">
               <Link
@@ -161,7 +153,6 @@ export default function Login() {
             </Col>
           </Row>
 
-          {/* login button */}
           <Row className="mb-3">
             <Col className="text-center">
               <button
@@ -182,7 +173,6 @@ export default function Login() {
             </Col>
           </Row>
 
-          {/* create account */}
           <Row>
             <Col className="text-center">
               <span style={{ color: "#155b6a", fontSize: "1rem" }}>

@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 
-// logout actions
 import { logout as userLogout } from "../slices/userSlice";
 import { logout as driverLogout } from "../slices/driverSlice";
 import { logout as adminLogout } from "../slices/adminSlice";
@@ -26,17 +25,14 @@ export default function Header() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef(null);
 
-  // ✅ Dark mode state
   const [theme, setTheme] = useState("light");
 
-  // ✅ load saved theme once
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") || "light";
     setTheme(savedTheme);
     document.body.className = savedTheme;
   }, []);
 
-  // ✅ toggle theme
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
@@ -44,7 +40,6 @@ export default function Header() {
     document.body.className = newTheme;
   };
 
-  // close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (profileRef.current && !profileRef.current.contains(e.target)) {
@@ -75,7 +70,6 @@ export default function Header() {
       className="px-4 shadow-sm"
       style={{ backgroundColor: "#c7b6ee", height: "80px" }}
     >
-      {/* Logo */}
       <Link to="/" className="d-flex align-items-center">
         <img
           src={logoImg}
@@ -84,7 +78,6 @@ export default function Header() {
         />
       </Link>
 
-      {/* Menu */}
       <Nav
         navbar
         className="mx-auto d-flex align-items-center"
@@ -166,6 +159,16 @@ export default function Header() {
             Chat
           </Link>
         </NavItem>
+                <NavItem>
+          <Link
+            to="/admin"
+            className="nav-link d-flex align-items-center"
+            style={{ color: "#4b0082", gap: "6px" }}
+          >
+            <img src={chatIcon} alt="Chat" style={{ height: "26px" }} />
+            admin
+          </Link>
+        </NavItem>
 
         <NavItem>
           <Link
@@ -178,7 +181,6 @@ export default function Header() {
           </Link>
         </NavItem>
 
-        {/* USER PROFILE */}
         <NavItem>
           <div ref={profileRef} style={{ position: "relative" }}>
             <div
@@ -209,7 +211,6 @@ export default function Header() {
                   padding: "10px 0",
                 }}
               >
-                {/* ✅ Dark Mode row */}
                 <div
                   style={{
                     padding: "12px 18px",
@@ -226,10 +227,8 @@ export default function Header() {
                   <span>{theme === "light" ? "🌙" : "☀"}</span>
                 </div>
 
-                {/* divider */}
                 <div style={{ height: "1px", backgroundColor: "#d6b8dd" }} />
 
-                {/* Logout row */}
                 <div
                   style={{
                     padding: "12px 18px",

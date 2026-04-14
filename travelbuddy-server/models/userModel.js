@@ -1,6 +1,3 @@
-// Normal user model (passenger)
-// © 2025 Travel Buddy. All rights reserved.
-
 import mongoose from "mongoose"
 
 const userSchema = new mongoose.Schema(
@@ -11,6 +8,9 @@ const userSchema = new mongoose.Schema(
     userPassword: { type: String, required: true },
     userGender: { type: String, enum: ["male", "female", "other"], default: "other" },
     preferredGender: { type: String, enum: ["any", "male", "female"], default: "any" },
+
+    isOnline: {type:Boolean, default: false},
+    lastSeen : {type: Date},  
    resetToken: String,
   resetTokenExp: Date
   },

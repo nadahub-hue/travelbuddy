@@ -1,8 +1,8 @@
 import { Container, Button } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 
-import moneyIcon from "../images/money.png";  // hand with money
-import cardIcon from "../images/visa.png";    // card icon
+import moneyIcon from "../images/money.png";  
+import cardIcon from "../images/visa.png";    
 
 export default function PaymentMethods() {
   const navigate = useNavigate();
@@ -18,14 +18,12 @@ export default function PaymentMethods() {
         textAlign: "center",
       }}
     >
-      {/* Top Icon */}
       <img
         src={moneyIcon}
         alt="Payment Icon"
         style={{ height: "120px", marginBottom: "10px" }}
       />
 
-      {/* Page Title */}
       <h2
         style={{
           marginTop: "10px",
@@ -37,7 +35,6 @@ export default function PaymentMethods() {
         Continue For Payment
       </h2>
 
-      {/* Card Payment Option */}
       <div
         onClick={() => navigate("/card-payment")}
         style={{
@@ -61,19 +58,9 @@ export default function PaymentMethods() {
         </h3>
       </div>
       
-       
+  
     </Container>
     <div>
-         <Button
-            onClick={() => navigate("/conform-booking")}
-            style={{
-              backgroundColor: "#9854c6",
-              color: "#ffffff",
-              marginTop: "15px",
-            }}
-          >
-            Back
-          </Button>
           </div>
           </>
   );

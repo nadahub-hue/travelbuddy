@@ -10,7 +10,7 @@ export default function Feedback() {
     e.preventDefault()
 
     try {
-      const res = await fetch("https://github.com/nadahub-hue/travelbuddy", {
+      const res = await fetch("http://localhost:7500/sendFeedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -38,7 +38,6 @@ export default function Feedback() {
       <Container style={{ maxWidth: "800px" }}>
         <Row>
           <Col className="text-center">
-            {/* Title */}
             <h1
               style={{
                 fontSize: "3rem",
@@ -50,7 +49,6 @@ export default function Feedback() {
               Give feedback
             </h1>
 
-            {/* Question 1 */}
             <p
               style={{
                 fontSize: "1.6rem",
@@ -61,7 +59,6 @@ export default function Feedback() {
               How would you rate your overall experience?
             </p>
 
-            {/* Stars */}
             <FormGroup style={{ marginBottom: "30px" }}>
               {[1, 2, 3, 4, 5].map((star) => (
                 <span
@@ -82,7 +79,6 @@ export default function Feedback() {
               ))}
             </FormGroup>
 
-            {/* Question 2 */}
             <p
               style={{
                 fontSize: "1.5rem",
@@ -93,9 +89,7 @@ export default function Feedback() {
               Kindly take a moment to tell us what you think
             </p>
 
-            {/* Form */}
             <form onSubmit={handleSubmit}>
-              {/* Text area */}
               <FormGroup>
                 <textarea
                   rows="4"
@@ -118,7 +112,6 @@ export default function Feedback() {
                 />
               </FormGroup>
 
-              {/* Button */}
               <button
                 type="submit"
                 style={{
@@ -139,7 +132,6 @@ export default function Feedback() {
               </button>
             </form>
 
-            {/* Server message */}
             {serverMsg && (
               <div
                 style={{

@@ -25,7 +25,7 @@ export default function Home() {
 
   return (
     <Container fluid className="p-0">
-      
+
       <div
         style={{
           backgroundColor: "#8c5adf",
@@ -35,7 +35,7 @@ export default function Home() {
           justifyContent: "space-between",
         }}
       >
-      
+
         <img
           src={logoImg}
           alt="Travel Buddy Logo"
@@ -186,24 +186,6 @@ export default function Home() {
               software driven by outstanding technology, you may schedule a ride
               close to you in only minutes.
             </p>
-            <br /> <br /><br />
-
-            <Button
-            onClick={() => navigate("/search")}
-            style={{
-              backgroundColor: "#9854c6",
-              color: "#ffffff",
-              marginTop: "15px",
-            }}
-          >
-            Back
-          </Button>
-
-          
-            <br />
-            <br />
-            <br />
-
             
           </Col>
         </Row>

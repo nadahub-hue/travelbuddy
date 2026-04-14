@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-// CREATE TRIP 
 export const createTripThunk = createAsyncThunk(
   "trip/createTrip",
   async (tripData, { rejectWithValue }) => {
@@ -14,7 +13,6 @@ export const createTripThunk = createAsyncThunk(
   }
 );
 
-// SEARCH TRIPS 
 export const searchTripsThunk = createAsyncThunk(
   "trip/searchTrips",
   async (query, { rejectWithValue }) => {
@@ -48,7 +46,6 @@ const tripSlice = createSlice({
   },
 
   extraReducers: (builder) => {
-    // CREATE TRIP -----------------------------
     builder.addCase(createTripThunk.pending, (state) => {
       state.loading = true;
       state.msg = "";
@@ -62,7 +59,6 @@ const tripSlice = createSlice({
       state.msg = action.payload?.serverMsg || "Trip creation failed";
     });
 
-    // SEARCH TRIPS -----------------------------
     builder.addCase(searchTripsThunk.pending, (state) => {
       state.loading = true;
     });

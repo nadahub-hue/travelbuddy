@@ -1,13 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-// PROCESS PAYMENT (POST /processPayment)
 export const processPaymentThunk = createAsyncThunk(
   "payment/processPayment",
   async (paymentData, { rejectWithValue }) => {
     try {
-      const res = await axios.post("https://github.com/nadahub-hue/travelbuddy", paymentData);
-      return res.data; // { serverMsg, paymentStatus, paymentInfo }
+      const res = await axios.post("http://localhost:7500/processPayment", paymentData);
+      return res.data; 
     } catch (err) {
       return rejectWithValue(
         err.response?.data || { serverMsg: "Payment failed", paymentStatus: false }
@@ -20,7 +19,7 @@ const paymentSlice = createSlice({
   name: "payment",
   initialState: {
     paymentInfo: null,
-    paymentStatus: null, // success / failed
+    paymentStatus: null, 
     loading: false,
     msg: "",
   },
@@ -32,7 +31,6 @@ const paymentSlice = createSlice({
   },
 
   extraReducers: (builder) => {
-    // PROCESS PAYMENT -----------------------------
     builder.addCase(processPaymentThunk.pending, (state) => {
       state.loading = true;
       state.msg = "";

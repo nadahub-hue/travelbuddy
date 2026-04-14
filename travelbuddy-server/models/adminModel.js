@@ -1,16 +1,30 @@
-// Admin model
-// © 2025 Travel Buddy. All rights reserved.
-
-import mongoose from "mongoose"
+import mongoose from "mongoose";
 
 const adminSchema = new mongoose.Schema(
   {
     adminName: { type: String, required: true },
-    adminEmail: { type: String, required: true, unique: true },
-    adminPassword: { type: String, required: true }
+
+    adminEmail: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+
+    adminPassword: { type: String, required: true },
   },
   { timestamps: true }
-)
+);
 
-const adminModel = mongoose.model("travel-buddy-admins", adminSchema)
-export default adminModel
+// remove password when sending response
+adminSchema.set("toJSON", {
+  transform: (doc, ret) => {
+    delete ret.adminPassword;
+    return ret;
+  },
+});
+
+const adminModel = mongoose.model("travel-buddy-admins", adminSchema);
+
+export default adminModel;
