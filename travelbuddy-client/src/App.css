@@ -1,0 +1,141 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+body.light {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+body.dark {
+  background-color: #121212;
+  color: #ffffff;
+}
+
+body.dark .card {
+  background-color: #1f1f1f;
+  color: #ffffff;
+}
+
+body.dark .navbar {
+  background-color: #1f1721 !important;
+}
+
+
+* {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+button {
+  transition: background-color 0.2s ease, transform 0.15s ease, opacity 0.2s ease !important;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  opacity: 0.93;
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+input, select, textarea {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  box-shadow: 0 0 0 3px rgba(75, 26, 154, 0.15);
+  outline: none;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #7e5d83;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #573a5f;
+}
+
+::-webkit-scrollbar-track:hover {
+    background-color: #c61ce0;
+}
+
+
+/* Dark mode fix */
+body.dark .about-page {
+  background: linear-gradient(160deg, #12061c 0%, #1b1025 40%, #2a1438 75%, #0f0718 100%);
+}
+
+body.dark .about-shape {
+  opacity: 0.22;
+}
+
+body.dark .about-title {
+  color: #f1d8ff;
+}
+
+body.dark .about-p {
+  color: #e8dff0;
+}
+
+body.dark .about-feature-pill {
+  background: rgba(35, 22, 48, 0.9);
+  color: #f5eaff;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+
+body.dark .about-feature-pill:hover {
+  box-shadow: 0 8px 24px rgba(180, 120, 220, 0.25);
+}
+
+body.dark .about-ring {
+  border-color: rgba(220, 180, 255, 0.25);
+}
+
+body.dark .about-ring-2 {
+  border-color: rgba(255, 120, 180, 0.22);
+}
+
+body.dark .about-ring-3 {
+  border-color: rgba(129, 199, 132, 0.3);
+}
+
+body.dark .about-hero-img {
+  filter: drop-shadow(0 20px 45px rgba(0, 0, 0, 0.55));
+}
+
